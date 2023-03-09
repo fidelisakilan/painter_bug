@@ -7,7 +7,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:painter_bug_poc/image_painter.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,6 +37,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  File? currentImage;
+
   void _onTap() async {
     XFile? imageFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -46,7 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
           await ImageCropPainter().generate(File(imageFile.path));
       final result = await _getTempImageFile;
       result.writeAsBytes(Uint8List.view(generatedImage.buffer));
-      Share.shareXFiles([XFile(result.path)]);
+      setState(() => currentImage = result);
     }
   }
 
@@ -56,9 +57,23 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: ElevatedButton(
-            onPressed: _onTap, child: const Text('Open Gallery')),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (currentImage != null)
+            SizedBox(
+              height: 200,
+              width: 200,
+              child: Image.file(
+                currentImage!,
+                fit: BoxFit.contain,
+              ),
+            ),
+          Center(
+              child: ElevatedButton(
+                  onPressed: _onTap, child: const Text('Open Gallery'))),
+        ],
       ),
     );
   }
